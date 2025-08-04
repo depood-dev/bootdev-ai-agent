@@ -7,32 +7,53 @@ from google.genai import types
 
 
 
-load_dotenv()
-api_key = os.environ.get("GEMINI_API_KEY")
-client = genai.Client(api_key=api_key)
+
+
 
 def main():
-    print("Hello from bootdev-ai-agent!")
-    if len(sys.argv) == 1:
-        print("Error - no promt")
+    # Load environment variables from a .env file so we can access sensitive keys
+    load_dotenv()
+
+    # Check if the '--verbose' option was provided by the user to enable extra output
+    verbose = "--verbose" in sys.argv
+
+    # Gather all positional arguments (ignore options/flags that start with '--')
+    args = []
+    for arg in sys.argv[1:]:
+        if not arg.startswith("--"):
+            args.append(arg)
+
+    if not args:
+        print("AI Code Assistant")
+        print('\nUsage: python main.py "your promt here" [--verbose]')
+        print('Example: python main.py "How di I build a calculator app?"')
         sys.exit(1)
-    
-    user_prompt = sys.argv[1]
+
+    api_key = os.environ.get("GEMINI_API_KEY")
+    client = genai.Client(api_key=api_key)
+
+    # Join positional aurguments into a single string
+    user_prompt = " ".join(args)
+
+    if verbose:
+        print(f"User prompt: {user_prompt}\n")
+
     messages = [
-        types.Content(role="user", parts=[types.Part(text=user_prompt)])
+        types.Content(role="user", parts=[types.Part(text=user_prompt)]),
     ]
 
-    response = client.models.generate_content(
-        model='gemini-2.0-flash-001', contents=messages,
-    )
+    generate_content(client, messages, verbose)
 
+def generate_content(client, messages, verbose):
+    response = client.models.generate_content(
+        model="gemini-2.0-flash-001",
+        contents=messages,
+    )
+    if verbose:
+        print("Prompt tokens:", response.usage_metadata.prompt_token_count)
+        print("Response tokens:", response.usage_metadata.candidates_token_count)
+    print("Response:")
     print(response.text)
-    
-    if len(sys.argv) > 2:
-        if sys.argv[2] == "--verbose":
-            print(f"User prompt: {user_prompt}")
-            print(f"Prompt tokens: {response.usage_metadata.prompt_token_count}")
-            print(f"Response tokens: {response.usage_metadata.candidates_token_count}")
 
 if __name__ == "__main__":
     main()
