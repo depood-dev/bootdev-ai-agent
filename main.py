@@ -4,12 +4,6 @@ from dotenv import load_dotenv
 from google import genai
 from google.genai import types
 
-
-
-
-
-
-
 def main():
     # Load environment variables from a .env file so we can access sensitive keys
     load_dotenv()
