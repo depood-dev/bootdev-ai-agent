@@ -9,6 +9,7 @@ def get_files_info(working_directory, directory="."):
 
         dir_contents = ""
         output = []
+        output.append("Result for current directory:")
 
 
         if not abs_path.startswith(abs_working_path):
@@ -23,7 +24,7 @@ def get_files_info(working_directory, directory="."):
         for item in dir_contents:
     
             full_item = os.path.join(abs_path, item)            
-            output.append(f"- {item}: file_size={os.path.getsize(full_item)} is_dir={os.path.isdir(full_item)}")
+            output.append(f"- {item}: file_size={os.path.getsize(full_item)} bytes, is_dir={os.path.isdir(full_item)}")
             
     except Exception as e:
         return f"Error: {e}"
