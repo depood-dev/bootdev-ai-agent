@@ -41,10 +41,20 @@ def main():
         types.Content(role="user", parts=[types.Part(text=user_prompt)]),
     ]
 
-    generate_content(client, messages, verbose)
+    for i in range(20):
+        try:
+            response = generate_content(client, messages, verbose)  # Now it returns response
+            
+            if not response.function_calls:  # No more function calls = we're done
+                print("Final response:")
+                print(response.text)
+                break
+                
+        except Exception as e:
+            print(f"Error: {e}")
+            break
 
 def generate_content(client, messages, verbose):
-
     response = client.models.generate_content(
         model="gemini-2.0-flash-001",
         contents=messages,
@@ -53,13 +63,17 @@ def generate_content(client, messages, verbose):
         )
     )
 
+    # ADD THIS: Save the LLM's response to conversation history
+    for candidate in response.candidates:
+        messages.append(candidate.content)
+
     if verbose:
         print("Prompt tokens:", response.usage_metadata.prompt_token_count)
         print("Response tokens:", response.usage_metadata.candidates_token_count)        
-    print("Response:")
+    #print("Response:")
 
 
-    if len(response.function_calls) > 0:
+    if response.function_calls:
         for call in response.function_calls:            
             function_call_result = call_function(call, verbose)
             if (
@@ -68,11 +82,16 @@ def generate_content(client, messages, verbose):
                 not hasattr(function_call_result.parts[0].function_response, "response")
             ):
                 raise Exception("Fatal: No function response in content part.")
+            
+             # ADD THIS: Save the tool result to conversation history
+            messages.append(function_call_result)
+
+            print(f" - Calling function: {call.name}")
 
             if verbose:
-                print(f"-> {function_call_result.parts[0].function_response.response}")
-        else:
-                print(response.text)
+                print(f"  Args: {call.args}")
+    
+    return response
 
 def call_function(call, verbose=False):
 

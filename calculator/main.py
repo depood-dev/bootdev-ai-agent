@@ -1,26 +1,15 @@
-# main.py
-
 import sys
 from pkg.calculator import Calculator
-from pkg.render import render
-
 
 def main():
+    if len(sys.argv) != 2:
+        print("Usage: python main.py '<expression>'")
+        sys.exit(1)
+    
+    expression = sys.argv[1]
     calculator = Calculator()
-    if len(sys.argv) <= 1:
-        print("Calculator App")
-        print('Usage: python main.py "<expression>"')
-        print('Example: python main.py "3 + 5"')
-        return
-
-    expression = " ".join(sys.argv[1:])
-    try:
-        result = calculator.evaluate(expression)
-        to_print = render(expression, result)
-        print(to_print)
-    except Exception as e:
-        print(f"Error: {e}")
-
+    result = calculator.evaluate(expression)
+    print(result)
 
 if __name__ == "__main__":
     main()
